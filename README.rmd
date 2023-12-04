@@ -1,0 +1,20 @@
+---
+title: "ReadMe"
+author: "Rachel Fellman"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Description
+
+# Required Packages
+The following is a list of required packages needed to run the app:  
+`tidyverse`  
+
+
+# Installing Packages
+
+# Code to Run App
