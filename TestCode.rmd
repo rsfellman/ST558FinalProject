@@ -8,15 +8,109 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(maps)
 ```
 
 read in data
 ```{r}
 landslide<- read_csv("Global_Landslide_Catalog_Export.csv")
 ```
-
+# Things to fix 
+1) order of factor 
 
 ```{r}
+land.na$landslide_size <- as.factor(land.na$landslide_size)
+land.na$landslide_size <- factor(land.na$landslide_size, levels = c("catastrophic", "very_large", "large", "medium", "small", "unknown"))
+```
 
+```{r}
+levels(land.na$landslide_size)
+```
+
+
+# data exploration
+
+set inputs for data exploration
+```{r}
+color = "fatality_count"
+```
+
+
+create map of data
+
+can change color to fatality_count, injury_count, or admin_division_population, need to change name with color
+```{r}
+#set up global data points
+world<- map_data("world")
+
+#create base map layer
+a<- ggplot()
+#add latitude and longitude information for the map
+a.plot<- a + geom_polygon(data = world, aes(x=long, y= lat, group = group), color = "darkgrey", fill = "grey") +
+#add the points of landslides
+   geom_point(data = landslide, aes(x = longitude, y = latitude, colour = color) ) +
+#add a color gradient for the magnitude of the earthquakes
+   scale_colour_gradient(low = "green", high = "red", name = "Population")+
+#add labels.
+  labs(x = "Longitude", y = "Latitude", title = "World Map of Landslides") +
+   theme(title = element_text(size=10))
+# display plot
+a.plot
+
+```
+
+
+graph of fatality count by size, country name, trigger, or category
+```{r}
+#create base plot with landslide size on x axis
+b <- ggplot(data = landslide, aes(x = as.factor(landslide_size)))
+#create bar plot with user input for the fill
+b + geom_bar(aes(fill = as.factor(landslide_trigger)))
+```
+
+```{r}
+g<- ggplot()
+      g+ geom_bar(data = land.na, aes(x = landslide_size, fill = as.factor(landslide_setting))) +
+      #add labels
+        scale_fill_discrete(name = "Setting")
+      labs(title = "Bar Graph of Landslide Size")
+```
+
+create states maps
+```{r}
+#set up state data points
+state<- map_data("state")
+
+#create base map layer
+d<- ggplot()
+#add latitude and longitude information for the map
+d.plot<- d + geom_polygon(data = state, aes(x=long, y= lat, group = group), color = "darkgrey", fill = "grey") +
+#add the points of the earthquakes in California
+   geom_point(data = eq.california, aes(x = longitude, y = latitude, colour = magnitude))  +
+#add a color gradient for the magnitude of the earthquakes
+   scale_colour_gradient(low = "lightblue", high = "darkblue", name = "Magnitude")+
+#adjust the coordinates
+  coord_cartesian(xlim = c(-127,-110), ylim = c(30,45)) +
+#add labels.
+  labs(x = "Longitude", y = "Latitude", title = "Plot of Earthquake Locations Colored by Magnitude in a 800 km Radius of the Center of California")
+```
+
+```{r}
+state<- map_data("state")
+
+#create base map layer
+d<- ggplot()
+#add latitude and longitude information for the map
+d + geom_polygon(data = state, aes(x=long, y= lat, group = group), color = "darkgrey", fill = "grey")
+```
+
+```{r}
+land.us<- landslide %>% 
+  filter(country_code == "US") %>% 
+  drop_na(fatality_count)
+```
+
+```{r}
+land.na <- landslide %>% drop_na(fatality_count)
 ```
 

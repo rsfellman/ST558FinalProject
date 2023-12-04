@@ -6,9 +6,10 @@
 
 library(shiny)
 library(tidyverse)
+library(maps)
 
 # Read in data with a relative path
-water<- read_csv("Global_Landslide_Catalog_Export.csv")
+landslide<- read_csv("Global_Landslide_Catalog_Export.csv")
 
 
 
@@ -36,7 +37,7 @@ fluidPage(
                
                # describe data used in app
                h3("Data"),
-               p("This app uses the Global Landslide Catalog from NASA's Open Data Portal. This calatog was created to help identify landslide events that were trigered by rainfall and contains 11033 obsesrvations with 31 variables. More information on the data used in this app's creation can be found at the following link:"),
+               p("This app uses the Global Landslide Catalog from NASA's Open Data Portal. This calatog was created to help identify landslide events that were triggered by rainfall, and it contains 11033 obsesrvations with 31 variables. More information on the data used in this app's creation can be found at the following link:"),
                a("https://data.nasa.gov/Earth-Science/Global-Landslide-Catalog-Export/dd9e-wu2v"),
                
                # describe purpose of each tab
@@ -55,7 +56,72 @@ fluidPage(
     #create Data Exploration Tab
     tabPanel("Data Explotation",
              
-             #do data exploration
+             #create layout for data exploration tab
+             sidebarLayout(
+               
+               #create sidebar panel where user can change inputs
+               sidebarPanel(
+                 
+                 selectInput("graphsum",
+                             #add label
+                             "Graphical Summary Type", 
+                             #add choices for the drop down
+                             c("World Map" = 1, "U.S. Map" = 2, "Bar Graph" = 3, "Histogram" = 4), 
+                             #set initial value to world map
+                             selected = "World Map"),
+                 
+                 #add conditional so the user can change what is viewed in each graphical summary
+                 conditionalPanel(
+                   #set condition
+                   condition = "input.graphsum == 1",
+                   radioButtons("color1",
+                                 #add label
+                                 "Color Points By:",
+                               # add choices for buttons
+                               c("Landslide Size" = 1 , "Injuries" = 2),
+                               #set initial value
+                               selected = 1)
+                 ),
+                 
+                 #add conditional panel for when us map is selected
+                 conditionalPanel(
+                   #set condition
+                   condition = "input.graphsum == 2",
+                   radioButtons("color2",
+                                #add label
+                                "Color Points By:",
+                                # add choices for buttons
+                                c("Fatalities" = 1 , "Landslide Size" = 2),
+                                #set initial value
+                                selected = 1)
+                 ),
+                 
+                 #add conditional panel for when bar graph is selected
+                 conditionalPanel(
+                   #set condition
+                   condition = "input.graphsum == 3",
+                   radioButtons("color3",
+                                #add label
+                                "Fill Graph By:",
+                                #add choices for buttons
+                                c("Landslide Setting" = 1, "Landslide Trigger" =2 , "Landlside Category" = 3),
+                                selected = 1)
+                 )
+                 
+                 #close sidebar panel
+                 ),
+               
+               
+               #create Main Panel
+               mainPanel(
+                 
+                 #add and name the plot output
+                 plotOutput("sum.plot")
+                 
+               )
+             )
+             
+#close data exploration tab
              
              ),
     
@@ -91,4 +157,5 @@ fluidPage(
              
              )
     )
+
 )
