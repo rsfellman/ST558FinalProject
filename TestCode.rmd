@@ -7,5 +7,16 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+read in data
+```{r}
+landslide<- read_csv("Global_Landslide_Catalog_Export.csv")
+```
+
+
+```{r}
+
 ```
 
