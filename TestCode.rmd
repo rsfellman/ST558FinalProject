@@ -117,3 +117,27 @@ g <- ggplot()
 g + geom_jitter(data = land.na, aes(x = fatality_count, y = admin_division_population, color = landslide_size))
 ```
 
+numerical summaries
+
+group by option
+```{r}
+land.na %>% 
+      select("fatality_count", "landslide_size", "country_name") %>% 
+      filter(country_name == "United States") %>% 
+      group_by(landslide_category) %>% 
+      summarize(mean = mean(fatality_count), max = max(fatality_count), min = min(fatality_count), sd = sd(fatality_count))
+```
+
+factors
+```{r}
+#make country name a factor
+land.na$country_name <- as.factor(land.na$country_name)
+#make landslide category a factor
+land.na$landslide_category <-as.factor(land.na$landslide_category)
+#make landslide trigger a factor
+land.na$landslide_trigger <-as.factor(land.na$landslide_trigger)
+#make landslide setting a factor
+land.na$landslide_setting <-as.factor(land.na$landslide_setting)
+```
+
+# modeling

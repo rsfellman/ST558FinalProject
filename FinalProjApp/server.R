@@ -8,6 +8,9 @@
 library(shiny)
 library(tidyverse)
 library(maps)
+library(DT)
+library(rlang)
+library(mathjaxr)
 
 # read in data with a relative path
 landslide<- read_csv("Global_Landslide_Catalog_Export.csv")
@@ -17,7 +20,16 @@ land.na <- landslide %>% drop_na(fatality_count)
 
 #create and order factor for landslide size variable
 land.na$landslide_size <- as.factor(land.na$landslide_size)
+#reorder landslide size
 land.na$landslide_size <- factor(land.na$landslide_size, levels = c("catastrophic", "very_large", "large", "medium", "small", "unknown"))
+#make country name a factor
+land.na$country_name <- as.factor(land.na$country_name)
+#make landslide category a factor
+land.na$landslide_category <-as.factor(land.na$landslide_category)
+#make landslide trigger a factor
+land.na$landslide_trigger <-as.factor(land.na$landslide_trigger)
+#make landslide setting a factor
+land.na$landslide_setting <-as.factor(land.na$landslide_setting)
 
 #filter US data with filter function
 land.us<- land.na %>% 
@@ -158,7 +170,39 @@ function(input, output, session) {
 # end of render plot
     })
 
+  #create data set that can be filtered and grouped by user with reactive function
+  data1 <- reactive({
+    land.na %>% 
+      #select variable
+      select("fatality_count", "landslide_size", "country_name", "landslide_category", "landslide_trigger", "landslide_setting") %>% 
+      #filter by user input
+      filter(country_name == input$filter) %>% 
+      #group by user input
+      group_by( !!sym (input$group)) %>% 
+      #give summary statistics
+      summarize(mean = mean(fatality_count), max = max(fatality_count), min = min(fatality_count), sd = sd(fatality_count))
+  })
   
+  #output the data table using renderdatatable 
+  output$summary <- renderDataTable(data1())
   
+  #create math output for random forest explanation with mathjax package
+  output$r.forest.math <- renderUI({
+    withMathJax(
+      #create equation for classification
+      helpText('For classification problems $$ m = {\\sqrt{p}} $$'),
+      #create equation for regression
+      helpText('For regression problems $$ m = \\frac{p}{3} $$')
+    )
+  })
+  
+  #create math output for mlr explanation with mathjax package
+  output$mlr.math <- renderUI({
+    withMathJax(
+      #create equation for higher order terms
+      helpText("Example of multiple linear regression with higher order terms: $$ Y_i = β_0 + β_1x_i + β_2x_i^2 + E_i $$"),
+      helpText("Example of multiple linear regression ith interaction terms: $$ Y_i = β_0 + β_1x_{1i} + β_2x_{2i} + β_3 x_{1i}x_{2i} + E_i $$")
+    )
+  })
   
 }
