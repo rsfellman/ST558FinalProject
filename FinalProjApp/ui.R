@@ -33,7 +33,7 @@ fluidPage(
                  
                #describe purpose of app
                h3("Purpose"),
-               p("This shiny app is being created for the final project for ST 558. It will plot, model, and predict using a dataset of my chosing. It is created using and R studio project connected to github and the Shiny package."),
+               p("This shiny app is being created for the final project for ST 558. It will plot, model, and predict using a dataset of my chosing (I am going to examine landslide data). It is created using and R studio project connected to github and the Shiny package."),
                
                # describe data used in app
                h3("Data"),
@@ -42,7 +42,7 @@ fluidPage(
                
                # describe purpose of each tab
                h3("Tabs"),
-               p("The data exploration tab will allow the app's user to creat different kind of numerical and graphical summaries. The modeling tab will fit two types of supervisedl learnin models. The modeling tab will have 3 subtabs as well. The first subtab, modeling info, will explain the two chosen models. The second subtab, model fitting, will be where the data is trained and tested on the model. The last subtab under the modeling tab will be the prediction tab. This will give the app user the ability to predict using the models included in the previous tab. The user will be able to select values for the predictors in this tab.")
+               p("The data exploration tab will allow the app's user to creat different kind of numerical and graphical summaries. The modeling tab will fit two types of supervised learning models and will have 3 subtabs as well. The first subtab, modeling info, will explain the two chosen models. The second subtab, model fitting, will be where the data is trained and tested on the model. The last subtab under the modeling tab will be the prediction tab. This will give the app user the ability to predict using the models included in the previous tab. The user will be able to select values for the predictors in this tab.")
                       ),
                
                #create the side panel for the image
@@ -55,7 +55,9 @@ fluidPage(
     
     #create Data Exploration Tab
     tabPanel("Data Explotation",
-             
+             #creat sub panels to separate graphs from numeric summaries
+             tabsetPanel(
+               tabPanel("Graphical Summaries",
              #create layout for data exploration tab
              sidebarLayout(
                
@@ -66,7 +68,7 @@ fluidPage(
                              #add label
                              "Graphical Summary Type", 
                              #add choices for the drop down
-                             c("World Map" = 1, "U.S. Map" = 2, "Bar Graph" = 3, "Histogram" = 4), 
+                             c("World Map" = 1, "U.S. Map" = 2, "Bar Graph" = 3, "Scatter Plot" = 4), 
                              #set initial value to world map
                              selected = "World Map"),
                  
@@ -106,6 +108,24 @@ fluidPage(
                                 #add choices for buttons
                                 c("Landslide Setting" = 1, "Landslide Trigger" =2 , "Landlside Category" = 3),
                                 selected = 1)
+                 ),
+                 
+                 #add conditional panel for when scatterplot is selected
+                 conditionalPanel(
+                   #set condition
+                   condition = "input.graphsum == 4",
+                   #create check box to remove outlier
+                   checkboxInput("outlier",
+                                 #add label
+                                 "Remove fatality outliers?",
+                                 #add initial value
+                                 value = FALSE),
+                   #create check box to color points by landslide size
+                   checkboxInput("color4",
+                                 #add label
+                                 "Color points by landlside size?",
+                                 #add initial value
+                                 value = FALSE)
                  )
                  
                  #close sidebar panel
@@ -119,6 +139,23 @@ fluidPage(
                  plotOutput("sum.plot")
                  
                )
+             )
+             #close graphical summaries subtab subtab
+               ),
+             #create subpanel for numeric summaries
+             tabPanel("Numeric Summaries",
+                      #create layout for numeric summaries subtab
+                      sidebarLayout(
+                        # create sidebar panel
+                        sidebarPanel(
+                          
+                        )
+                      )
+                      
+                      
+                      
+                      )
+             # close subtabs
              )
              
 #close data exploration tab

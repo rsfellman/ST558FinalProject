@@ -42,7 +42,9 @@ function(input, output, session) {
     world<- map_data("world")
     #get us map data
     states<- map_data("state")
-    
+    #remove fatality outlier
+    land.out <- land.na %>% 
+      filter(fatality_count < 1000)
     
     
     #create graph with condition world map colored by fatalities
@@ -66,6 +68,7 @@ function(input, output, session) {
         scale_colour_gradient(low = "green", high = "red", name = "Injuries")+
         #add labels.
         labs(x = "Longitude", y = "Latitude", title = "World Map of Landslides")
+      
       
       #create graph with condition US map and fatalities.
     } else if (input$graphsum == 2 & input$color2 == 1) {
@@ -93,16 +96,68 @@ function(input, output, session) {
         #add labels.
         labs(x = "Longitude", y = "Latitude", title = "United States Map of Landslides")
       
-      #create graph for the conditions bar graph and setting
+      
+      #create graph for the conditions bar graph and landslide setting
     } else if (input$graphsum ==3 & input$color3 ==1) {
-      #create bar plot with user input for the fill
+      #create bar plot fill by landslide setting
      g + geom_bar(data = land.na, aes(x = landslide_size, fill = as.factor(landslide_setting))) +
-      #add labels
+      #add labels to legend
       scale_fill_discrete(name = "Setting") +
+        #add title
       labs(title = "Bar Graph of Landslide Size")
+      
+      #create graph for the conditions bar graph and landslide trigger
+    } else if (input$graphsum ==3 & input$color3 ==2) {
+      #create bar plot with fill by landslide trigger
+      g + geom_bar(data = land.na, aes(x = landslide_size, fill = as.factor(landslide_trigger)))+
+        #add labels to legend
+        scale_fill_discrete(name = "Trigger") +
+        #add title
+        labs(title = "Bar Graph of Landslide Size")
+      
+      #create graph for the conditions bar graph and landslide category
+    } else if (input$graphsum ==3 & input$color3 == 3) {
+      #create bar plot with fill by landslide category
+      g + geom_bar(data = land.na, aes(x = landslide_size, fill = as.factor(landslide_category)))+
+        #add labels to legend
+        scale_fill_discrete(name = "Category") +
+        #add title
+        labs(title = "Bar Graph of Landslide Size")
+      
+      
+      #create graph for conditions scatterplot and no boxes checked
+    } else if (input$graphsum == 4 & input$outlier == FALSE & input$color4 == FALSE) {
+      #create scatter plot
+      g + geom_jitter(data = land.na, aes(x = fatality_count, y = admin_division_population)) +
+      #add labels
+      labs(title = "Scatter Plot of Landslide Fatality Count by Population", x = "Fatality Count", y = "Population" )
+      
+      #create graph for conditions scatterplot and outlier box checked
+    } else if (input$graphsum == 4 & input$outlier == TRUE & input$color4 == FALSE) {
+      g + geom_jitter(data = land.out, aes(x = fatality_count, y = admin_division_population)) +
+        #add labels
+        labs(title = "Scatter Plot of Landslide Fatality Count by Population", x = "Fatality Count", y = "Population" )
+      
+      #create graph for conditions scatter plot and outlier and size box checked
+    } else if (input$graphsum == 4 & input$outlier == TRUE & input$color4 == TRUE) {
+      g + geom_jitter(data = land.out, aes(x = fatality_count, y = admin_division_population, color = landslide_size)) +
+        #add labels
+        labs(title = "Scatter Plot of Landslide Fatality Count by Population", x = "Fatality Count", y = "Population" ) +
+      #adjust the legend
+    scale_colour_manual(name = "Landslide Size", values = c("catastrophic" = "darkred", "very_large" = "red", "large" = "orange", "medium" = "yellow", "small" = "green", "unknown"= "darkgrey"))
+      
+      #create graph for conditions scatter plot and size box checked
+    } else if (input$graphsum == 4 & input$outlier == FALSE & input$color4 == TRUE) {
+      g + geom_jitter(data = land.na, aes(x = fatality_count, y = admin_division_population, color = landslide_size)) +
+        #add labels
+        labs(title = "Scatter Plot of Landslide Fatality Count by Population", x = "Fatality Count", y = "Population" ) +
+        #adjust the legend
+        scale_colour_manual(name = "Landslide Size", values = c("catastrophic" = "darkred", "very_large" = "red", "large" = "orange", "medium" = "yellow", "small" = "green", "unknown"= "darkgrey"))
     }
-
+    
+# end of render plot
     })
+
   
   
   

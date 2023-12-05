@@ -30,10 +30,6 @@ levels(land.na$landslide_size)
 
 # data exploration
 
-set inputs for data exploration
-```{r}
-color = "fatality_count"
-```
 
 
 create map of data
@@ -104,6 +100,7 @@ d<- ggplot()
 d + geom_polygon(data = state, aes(x=long, y= lat, group = group), color = "darkgrey", fill = "grey")
 ```
 
+remove NA valuse for fatality count.
 ```{r}
 land.us<- landslide %>% 
   filter(country_code == "US") %>% 
@@ -112,5 +109,11 @@ land.us<- landslide %>%
 
 ```{r}
 land.na <- landslide %>% drop_na(fatality_count)
+```
+
+scatter of fatality count vs population
+```{r}
+g <- ggplot()
+g + geom_jitter(data = land.na, aes(x = fatality_count, y = admin_division_population, color = landslide_size))
 ```
 
