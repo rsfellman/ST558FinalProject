@@ -106,9 +106,11 @@ land.us<- landslide %>%
   filter(country_code == "US") %>% 
   drop_na(fatality_count)
 ```
-
+ filter some stuff
 ```{r}
-land.na <- landslide %>% drop_na(fatality_count)
+land.na <- landslide %>% 
+  drop_na(fatality_count) %>% 
+  select("landslide_category","landslide_trigger","landslide_size","landslide_setting","fatality_count","injury_count","country_name","admin_division_population","gazeteer_closest_point", "gazeteer_distance", "longitude", "latitude")
 ```
 
 scatter of fatality count vs population
@@ -141,3 +143,7 @@ land.na$landslide_setting <-as.factor(land.na$landslide_setting)
 ```
 
 # modeling
+```{r}
+names(land.na[,-5])
+```
+

@@ -10,19 +10,23 @@ library(maps)
 library(DT)
 library(rlang)
 library(mathjaxr)
+library(caret)
 
 # Read in data with a relative path
 landslide<- read_csv("Global_Landslide_Catalog_Export.csv")
 
-#drop missing fatality count observations
-land.na <- landslide %>% drop_na(fatality_count)
+#drop missing fatality count observations and select columns
+land.na <- landslide %>% 
+  drop_na(fatality_count) %>% 
+  select("landslide_category","landslide_trigger","landslide_size","landslide_setting","fatality_count","injury_count","country_name","admin_division_population","longitude", "latitude")
+
 
 #make country name a factor
 land.na$country_name <- as.factor(land.na$country_name)
 
 #filter US data with filter function
 land.us<- land.na %>% 
-  filter(country_code == "US")
+  filter(country_name == "United States")
 
 
 
@@ -92,7 +96,7 @@ fluidPage(
                                  #add label
                                  "Color Points By:",
                                # add choices for buttons
-                               c("Landslide Size" = 1 , "Injuries" = 2),
+                               c("Landslide Size" =1 , "Injuries" =2),
                                #set initial value
                                selected = 1)
                  ),
@@ -118,8 +122,8 @@ fluidPage(
                                 #add label
                                 "Fill Graph By:",
                                 #add choices for buttons
-                                c("Landslide Setting" = 1, "Landslide Trigger" =2 , "Landlside Category" = 3),
-                                selected = 1)
+                                c("landslide_setting", "landslide_trigger" , "landslide_category"),
+                                selected = "landslide_setting")
                  ),
                  
                  #add conditional panel for when scatterplot is selected
@@ -232,7 +236,40 @@ fluidPage(
                #create subtab for model fitting
                tabPanel("Model Fitting",
                         
-                        #stuff
+                        #create layout
+                        sidebarLayout(
+                          #create sidebar panel
+                          sidebarPanel(
+                            
+                            sliderInput("test",
+                                        #add label
+                                        "Choose percentage of data to use for training the model",
+                                        #set minimum for slider
+                                        min = 0,
+                                        #set maximum for slider
+                                        max = 100,
+                                        #set initial value
+                                        value = 80),
+                            
+                            #create check box input to allow user to chose variables they want in mlr model
+                            checkboxGroupInput("mlr.vars",
+                                               #add label
+                                               "Select the variables you would like to include in the multiple linear regression model",
+                                               #add choices
+                                               names(land.na[,-5]),
+                                               # have all variables selected to start
+                                               selected = names(land.na[,-5]))
+                            
+                          ),
+                          
+                          #create main panel
+                          mainPanel(
+                            
+                            #print results of mlr fit
+                            uiOutput ("mlr.train")
+                            
+                          )
+                        )
                         
                         ),
                

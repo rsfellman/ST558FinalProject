@@ -11,12 +11,15 @@ library(maps)
 library(DT)
 library(rlang)
 library(mathjaxr)
+library(caret)
 
 # read in data with a relative path
 landslide<- read_csv("Global_Landslide_Catalog_Export.csv")
 
-#drop missing fatality count observations
-land.na <- landslide %>% drop_na(fatality_count)
+#drop missing fatality count observations and select variables
+land.na <- landslide %>% 
+  drop_na(fatality_count) %>% 
+  select("landslide_category","landslide_trigger","landslide_size","landslide_setting","fatality_count","injury_count","country_name","admin_division_population", "longitude", "latitude")
 
 #create and order factor for landslide size variable
 land.na$landslide_size <- as.factor(land.na$landslide_size)
@@ -33,7 +36,7 @@ land.na$landslide_setting <-as.factor(land.na$landslide_setting)
 
 #filter US data with filter function
 land.us<- land.na %>% 
-  filter(country_code == "US")
+  filter(country_name == "United States")
 
 
 
@@ -59,7 +62,7 @@ function(input, output, session) {
       filter(fatality_count < 1000)
     
     
-    #create graph with condition world map colored by fatalities
+    #create graph with condition world map colored by size
     if (input$graphsum == 1 & input$color1 == 1) {
       #create world map plot
       g +  geom_polygon(data = world, aes(x=long, y= lat, group = group), color = "darkgrey", fill = "grey") +
@@ -109,32 +112,12 @@ function(input, output, session) {
         labs(x = "Longitude", y = "Latitude", title = "United States Map of Landslides")
       
       
-      #create graph for the conditions bar graph and landslide setting
-    } else if (input$graphsum ==3 & input$color3 ==1) {
+      #create graph for the conditions bar graph and  fill depending on user input
+    } else if (input$graphsum ==3) {
       #create bar plot fill by landslide setting
-     g + geom_bar(data = land.na, aes(x = landslide_size, fill = as.factor(landslide_setting))) +
-      #add labels to legend
-      scale_fill_discrete(name = "Setting") +
+     g + geom_bar(data = land.na, aes(x = landslide_size, fill = !!sym(input$color3))) +
         #add title
       labs(title = "Bar Graph of Landslide Size")
-      
-      #create graph for the conditions bar graph and landslide trigger
-    } else if (input$graphsum ==3 & input$color3 ==2) {
-      #create bar plot with fill by landslide trigger
-      g + geom_bar(data = land.na, aes(x = landslide_size, fill = as.factor(landslide_trigger)))+
-        #add labels to legend
-        scale_fill_discrete(name = "Trigger") +
-        #add title
-        labs(title = "Bar Graph of Landslide Size")
-      
-      #create graph for the conditions bar graph and landslide category
-    } else if (input$graphsum ==3 & input$color3 == 3) {
-      #create bar plot with fill by landslide category
-      g + geom_bar(data = land.na, aes(x = landslide_size, fill = as.factor(landslide_category)))+
-        #add labels to legend
-        scale_fill_discrete(name = "Category") +
-        #add title
-        labs(title = "Bar Graph of Landslide Size")
       
       
       #create graph for conditions scatterplot and no boxes checked
@@ -205,4 +188,33 @@ function(input, output, session) {
     )
   })
   
+  #use reactive function to get user input on split for train/test set.
+  train1 <- reactiveValues({
+    # create training index
+    train.index<- createDataPartition(land.na$fatality_count, p = (input$test/100), list = FALSE)
+    #create train and test sets
+    landslide.train <- land.na[train.index, ]
+    landslide.test <- land.na[-train.index, ]
+    
+    #fit mlr model using train function from caret package
+    fit.mlr <- train(fatality_count ~ !!sym(input$mlr.vars), data = landslide.train,
+                     #select method
+                     method = "lm",
+                     #preprocess data
+                     preProcess = c("center","scale"),
+                     #do cross validation
+                     trControl = trainControl(method = "cv", number = 5))
+
+  })
+
+  
+  output$mlr.train <- renderUI({
+    x<-(train1$fit.mlr)
+    print(x)
+  })
+  
 }
+
+
+
+
