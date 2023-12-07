@@ -38,7 +38,8 @@ land.na$landslide_setting <-as.factor(land.na$landslide_setting)
 land.us<- land.na %>% 
   filter(country_name == "United States")
 
-
+#filter data set so there are no missing values
+land.nomiss<- land.na[complete.cases(land.na), ]
 
 # Define server logic 
 function(input, output, session) {
@@ -188,31 +189,73 @@ function(input, output, session) {
     )
   })
   
+  #models
+  
   #use reactive function to get user input on split for train/test set.
-  train1 <- reactiveValues({
+  train.test <- reactive({
     # create training index
-    train.index<- createDataPartition(land.na$fatality_count, p = (input$test/100), list = FALSE)
+    train.index<- createDataPartition(land.nomiss$fatality_count, p = (input$test/100), list = FALSE)
     #create train and test sets
-    landslide.train <- land.na[train.index, ]
-    landslide.test <- land.na[-train.index, ]
+    landslide.train <- land.nomiss[train.index, ]
+    landslide.test <- land.nomiss[-train.index, ]
+    #create list output
+    list(land.train = landslide.train, land.test = landslide.test)
+  })
+  
+
+  
+  #reevaluate with inputs only when button is pressed using event reactive
+  model<- eventReactive(input$submit,{
+    #call training set from reactive function
+    sets <- train.test()
     
-    #fit mlr model using train function from caret package
-    fit.mlr <- train(fatality_count ~ !!sym(input$mlr.vars), data = landslide.train,
+    #filter training set for mlr to include only selected variables
+    land.mlrvar <- sets$land.train %>% 
+      select("fatality_count",input$mlr.vars)
+    
+    #filter training set for random forest to include only selected variables
+    land.rfvar<- sets$land.train %>% 
+      select("fatality_count", input$rforest.vars)
+    
+    #put all inputs into a list
+    list(mlr = land.mlrvar, rfor = land.rfvar, mtry = input$mtry, cv = input$cv)
+    
+  })
+  
+  output$models.mlr<-  renderTable({
+    #call inputs from eventReactive
+    mod<- model()
+    
+    #fit mlr model
+    fit.mlr <- train(fatality_count ~ . , data = mod$mlr,
                      #select method
                      method = "lm",
                      #preprocess data
                      preProcess = c("center","scale"),
                      #do cross validation
                      trControl = trainControl(method = "cv", number = 5))
-
+    #print results of mlr fit
+    print(fit.mlr)
+    
   })
-
-  
-  output$mlr.train <- renderUI({
-    x<-(train1$fit.mlr)
-    print(x)
+    
+  output$models.rf <- renderTable({
+    #call inputs from eventReactive
+    mod<- model()
+    #fit random forest model
+    fit.rf <- train(fatality_count ~ . , data = mod$rfor,
+                    #select method
+                    method = "rf",
+                    #do cross validation
+                    trControl = trainControl(method = "cv", number = mod$cv),
+                    #add tuning parameter
+                    tuneGrid = data.frame(mtry = 1:mod$mtry))
+    
+    #print results of random forest model
+    print(fit.rf)
+    
+    
   })
-  
 }
 
 

@@ -147,3 +147,106 @@ land.na$landslide_setting <-as.factor(land.na$landslide_setting)
 names(land.na[,-5])
 ```
 
+```{r}
+ train1 <- reactiveValues({
+    # create training index
+    train.index<- createDataPartition(land.na$fatality_count, p = (input$test/100), list = FALSE)
+    #create train and test sets
+    landslide.train <- land.na[train.index, ]
+    landslide.test <- land.na[-train.index, ]
+    
+    #fit mlr model using train function from caret package
+    fit.mlr <- train(fatality_count ~ !!sym(input$mlr.vars), data = landslide.train,
+                     #select method
+                     method = "lm",
+                     #preprocess data
+                     preProcess = c("center","scale"),
+                     #do cross validation
+                     trControl = trainControl(method = "cv", number = 5))
+
+  })
+
+  
+  output$mlr.train <- renderUI({
+    x<-(train1$fit.mlr)
+    print(x)
+  })
+```
+
+```{r}
+land.train.sub <- land.nomiss
+```
+
+
+  #use reactive to fit models
+  models <- reactive ({
+    #call data from train.test
+    data <- train.test()
+    
+```{r}
+    #fit mlr model
+    fit.mlr <- train(fatality_count ~ , data = land.nomiss,
+                     #select method
+                     method = "lm",
+                     #preprocess data
+                     preProcess = c("center","scale"),
+                     #do cross validation
+                     trControl = trainControl(method = "cv", number = 5))
+
+```
+
+```{r}
+fit.rfor <- train(fatality_count ~ landslide_trigger + country_name , data = land.nomiss,
+                  #select method
+                  method = "rf",
+                  #do cross validation
+                 trControl = trainControl(method = "cv", number = 2),
+                 #add tuning parameter
+                 tuneGrid = data.frame(mtry = 1:9))
+```
+
+```{r}
+y<- unlist(x)
+```
+
+```{r}
+print(fit.rfor)
+```
+
+    
+```{r}
+land.nomiss<- land.na[complete.cases(land.na), ]
+```
+    
+```{r}
+paste(names(land.nomiss), collapse = "+")
+```
+    
+```{r}
+assign(names(land.nomiss$landslide_category),land.nomiss$landslide_category)
+```
+
+```{r}
+x<- syms(names(land.pred))
+land.pred <- land.nomiss[,-5]
+```
+
+```{r}
+```
+
+
+```{r}
+length(x)
+```
+
+
+```{r}
+for (i in 1:length(x)){
+  x[[i]] = land.pred[,i]
+}
+```
+
+```{r}
+y<- data.frame(x)
+```
+

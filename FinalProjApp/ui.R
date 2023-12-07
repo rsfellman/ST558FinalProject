@@ -28,6 +28,8 @@ land.na$country_name <- as.factor(land.na$country_name)
 land.us<- land.na %>% 
   filter(country_name == "United States")
 
+#filter data set so there are no missing values
+land.nomiss<- land.na[complete.cases(land.na), ]
 
 
 # Define UI for application 
@@ -186,6 +188,9 @@ fluidPage(
                         #create main panel
                         mainPanel(
                           
+                          #add header
+                          h3("Average Number of Fatalities for Landslide Events"),
+                          
                           #add table output
                           dataTableOutput ("summary")
                         )
@@ -243,7 +248,7 @@ fluidPage(
                             
                             sliderInput("test",
                                         #add label
-                                        "Choose percentage of data to use for training the model",
+                                        "Choose the percentage of data to use for training the model",
                                         #set minimum for slider
                                         min = 0,
                                         #set maximum for slider
@@ -251,23 +256,81 @@ fluidPage(
                                         #set initial value
                                         value = 80),
                             
+                            #line break
+                            br(),
+                            
                             #create check box input to allow user to chose variables they want in mlr model
                             checkboxGroupInput("mlr.vars",
                                                #add label
                                                "Select the variables you would like to include in the multiple linear regression model",
                                                #add choices
-                                               names(land.na[,-5]),
+                                               names(land.nomiss[,-5]),
                                                # have all variables selected to start
-                                               selected = names(land.na[,-5]))
+                                               selected = names(land.nomiss[,-5])),
+                            
+                            #line break
+                            br(),
+                            
+                            #create check box input that allows user to chose variables for random forest model
+                            checkboxGroupInput("rforest.vars",
+                                               #add label
+                                               "Select the variables you would like to include in the random forest model",
+                                               #add choices
+                                               names(land.nomiss[,-5]),
+                                               # have all variables selected to start
+                                               #selected
+                                               ),
+                            
+                            # h5("Set the tuning parameter for the random forest model. This parameter mtry gives us the number of randomly selected predictors we will use.")
+                            
+                            #create slider input that allows the user to set the tuning parameter
+                            sliderInput("mtry",
+                                        #add label
+                                        "Set tuning parameter mtry for random forest model",
+                                        #set minimum
+                                        min = 1,
+                                        #set maximum
+                                        max = 9,
+                                        #set initial value
+                                        value = 3),
+                            
+                            #create numeric input for cross validation
+                            numericInput("cv",
+                                         #add label
+                                         "select the number of folds for cross validation on the random forest model",
+                                         #set minimum
+                                         min = 1,
+                                         #set maximum
+                                         max = 10,
+                                         #set initial value
+                                         value = 3),
+                            
+                            #add break
+                            br(),
+                            
+                            #create action button
+                            actionButton("submit", "Fit Models")
+                            
+                            
                             
                           ),
+                          
+                          
                           
                           #create main panel
                           mainPanel(
                             
-                            #print results of mlr fit
-                            uiOutput ("mlr.train")
+                            #add titles
+                            h3("Multiple Linear Regression Model Fit Statistics"),
                             
+                            #print results of mlr training 
+                            tableOutput ("models.mlr"),
+                            
+                            #add titles
+                            h3("Random Forest Model Fit Statistics"),
+                            
+                            #print results of random forest training
+                            tableOutput("models.rf")
                           )
                         )
                         
