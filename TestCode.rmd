@@ -206,8 +206,19 @@ fit.rfor <- train(fatality_count ~ landslide_trigger + country_name , data = lan
 ```
 
 ```{r}
-y<- unlist(x)
+imp <- varImp(fit.rfor, scale = FALSE)
 ```
+
+```{r}
+plot(imp, top = 20)
+```
+
+```{r}
+    pred.mlr <- predict(fit.mlr, newdata = land.nomiss)
+h<-   postResample(pred.mlr, obs = land.nomiss$fatality_count)
+
+```
+
 
 ```{r}
 print(fit.rfor)

@@ -124,29 +124,29 @@ function(input, output, session) {
       #create graph for conditions scatterplot and no boxes checked
     } else if (input$graphsum == 4 & input$outlier == FALSE & input$color4 == FALSE) {
       #create scatter plot
-      g + geom_jitter(data = land.na, aes(x = fatality_count, y = admin_division_population)) +
+      g + geom_jitter(data = land.na, aes(y = fatality_count, x = admin_division_population)) +
       #add labels
-      labs(title = "Scatter Plot of Landslide Fatality Count by Population", x = "Fatality Count", y = "Population" )
+      labs(title = "Scatter Plot of Landslide Fatality Count by Population", y = "Fatality Count", x = "Population" )
       
       #create graph for conditions scatterplot and outlier box checked
     } else if (input$graphsum == 4 & input$outlier == TRUE & input$color4 == FALSE) {
-      g + geom_jitter(data = land.out, aes(x = fatality_count, y = admin_division_population)) +
+      g + geom_jitter(data = land.out, aes(y = fatality_count, x = admin_division_population)) +
         #add labels
-        labs(title = "Scatter Plot of Landslide Fatality Count by Population", x = "Fatality Count", y = "Population" )
+        labs(title = "Scatter Plot of Landslide Fatality Count by Population", y = "Fatality Count", x = "Population" )
       
       #create graph for conditions scatter plot and outlier and size box checked
     } else if (input$graphsum == 4 & input$outlier == TRUE & input$color4 == TRUE) {
-      g + geom_jitter(data = land.out, aes(x = fatality_count, y = admin_division_population, color = landslide_size)) +
+      g + geom_jitter(data = land.out, aes(y = fatality_count, x = admin_division_population, color = landslide_size)) +
         #add labels
-        labs(title = "Scatter Plot of Landslide Fatality Count by Population", x = "Fatality Count", y = "Population" ) +
+        labs(title = "Scatter Plot of Landslide Fatality Count by Population", y = "Fatality Count", x = "Population" ) +
       #adjust the legend
     scale_colour_manual(name = "Landslide Size", values = c("catastrophic" = "darkred", "very_large" = "red", "large" = "orange", "medium" = "yellow", "small" = "green", "unknown"= "darkgrey"))
       
       #create graph for conditions scatter plot and size box checked
     } else if (input$graphsum == 4 & input$outlier == FALSE & input$color4 == TRUE) {
-      g + geom_jitter(data = land.na, aes(x = fatality_count, y = admin_division_population, color = landslide_size)) +
+      g + geom_jitter(data = land.na, aes(y = fatality_count, x = admin_division_population, color = landslide_size)) +
         #add labels
-        labs(title = "Scatter Plot of Landslide Fatality Count by Population", x = "Fatality Count", y = "Population" ) +
+        labs(title = "Scatter Plot of Landslide Fatality Count by Population", y = "Fatality Count", x = "Population" ) +
         #adjust the legend
         scale_colour_manual(name = "Landslide Size", values = c("catastrophic" = "darkred", "very_large" = "red", "large" = "orange", "medium" = "yellow", "small" = "green", "unknown"= "darkgrey"))
     }
@@ -213,16 +213,25 @@ function(input, output, session) {
     land.mlrvar <- sets$land.train %>% 
       select("fatality_count",input$mlr.vars)
     
+    #filter test set for mlr to include only selected variables
+    land.mlrvar.test <- sets$land.test %>% 
+      select("fatality_count", input$mlr.vars)
+    
     #filter training set for random forest to include only selected variables
     land.rfvar<- sets$land.train %>% 
       select("fatality_count", input$rforest.vars)
     
+    #filter test set for random forest to include only selected variables.
+    land.rfvar.test <- sets$land.test %>% 
+      select("fatality_count", input$rforest.vars)
+    
     #put all inputs into a list
-    list(mlr = land.mlrvar, rfor = land.rfvar, mtry = input$mtry, cv = input$cv)
+    list(mlr = land.mlrvar, rfor = land.rfvar, mtry = input$mtry, cv = input$cv, mlr.test = land.mlrvar.test, rfor.test = land.rfvar.test)
     
   })
   
-  output$models.mlr<-  renderTable({
+  #fit models within reactive fucntion
+  fitted.models <- reactive({
     #call inputs from eventReactive
     mod<- model()
     
@@ -234,14 +243,7 @@ function(input, output, session) {
                      preProcess = c("center","scale"),
                      #do cross validation
                      trControl = trainControl(method = "cv", number = 5))
-    #print results of mlr fit
-    print(fit.mlr)
     
-  })
-    
-  output$models.rf <- renderTable({
-    #call inputs from eventReactive
-    mod<- model()
     #fit random forest model
     fit.rf <- train(fatality_count ~ . , data = mod$rfor,
                     #select method
@@ -251,11 +253,68 @@ function(input, output, session) {
                     #add tuning parameter
                     tuneGrid = data.frame(mtry = 1:mod$mtry))
     
-    #print results of random forest model
-    print(fit.rf)
-    
-    
+    list(fit.mlr = fit.mlr, fit.rf = fit.rf)
   })
+  
+  #print resutls
+  output$models.mlr<-  renderTable({
+    data <- fitted.models()
+    #print results of mlr fit
+    print(data$fit.mlr)
+  })
+  
+  #use renderPrint to create output of fit statistics of mlr model on testing data set.
+  output$mlr.test <- renderPrint({
+    #call data from reactive function where test and training subsets were formed
+    mod <- model()
+    #call data from reactive function where the models were fit
+    data<- fitted.models()
+    
+    #use prediction function to fit with the test set data
+    pred.mlr <- predict(data$fit.mlr, newdata = mod$mlr.test)
+    #use postResample function to get statisctics on test set
+    postResample(pred.mlr, obs = mod$mlr.test$fatality_count)
+  })
+  
+  
+  output$mlr.summary<- renderPrint({
+    data<- fitted.models()
+    summary(data$fit.mlr)
+  })
+  
+
+  
+  
+  #print results
+  output$models.rf <- renderTable({
+    data<- fitted.models()
+    #print results of random forest model
+    print(data$fit.rf)
+  })
+  
+  output$rf.test <- renderPrint({
+    #call data from reactive function where test and training subsets were formed
+    mod <- model()
+    #call data from reactive function where the models were fit
+    data<- fitted.models()
+    
+    #use prediction function to fit with the test set data
+    pred.rf <- predict(data$fit.rf, newdata = mod$rfor.test)
+    #use post resample function to get statistics on test set
+    postResample(pred.rf, obs = mod$rfor.test$fatality_count)
+  })
+  
+  #Use the renderPlot function to create a plot of variable importance for the random forest model.
+  output$rf.imp <- renderPlot({
+    #get data from previous functions were models were trained
+    data<- fitted.models()
+    #get variable importance with varimp function
+    importance <- varImp(data$fit.rf, scale = FALSE)
+    #plot importance for top 20 variables
+    plot(importance, top = 20)
+  })
+  
+  
 }
 
 

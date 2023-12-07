@@ -278,7 +278,7 @@ fluidPage(
                                                #add choices
                                                names(land.nomiss[,-5]),
                                                # have all variables selected to start
-                                               #selected
+                                               selected = c("landslide_category", "landslide_trigger")
                                                ),
                             
                             # h5("Set the tuning parameter for the random forest model. This parameter mtry gives us the number of randomly selected predictors we will use.")
@@ -292,7 +292,7 @@ fluidPage(
                                         #set maximum
                                         max = 9,
                                         #set initial value
-                                        value = 3),
+                                        value = 2),
                             
                             #create numeric input for cross validation
                             numericInput("cv",
@@ -319,18 +319,80 @@ fluidPage(
                           
                           #create main panel
                           mainPanel(
+                            p("To get results for your model, press the 'Fit Models' button."),
                             
+                            #create column layout
+                            fluidRow(
+                              column(
+                                
+                                #add bigger title
+                                h3("Multiple Linear Regression"),
                             #add titles
-                            h3("Multiple Linear Regression Model Fit Statistics"),
+                            strong("Fit Statistics"),
+                            
+                            #add break
+                            br(),
                             
                             #print results of mlr training 
                             tableOutput ("models.mlr"),
                             
+                            #add label
+                            strong("Comparison Statistics on Test Data"),
+                            
+                            #create table output for test statistics
+                            verbatimTextOutput("mlr.test"),
+                            
+                            #add title
+                            strong("MLR Summary"),
+                            
+                            #table output for mlr summary
+                            verbatimTextOutput("mlr.summary"),
+                            
+                            
+                            
+                            #set column width
+                            width = 6),
+                            
+                            #set up other column
+                            column(
+                              
+                              #add bigger title
+                              h3("Random Forest"),
                             #add titles
-                            h3("Random Forest Model Fit Statistics"),
+                            strong("Fit Statistics"),
+                            
+                            #add break
+                            br(),
                             
                             #print results of random forest training
-                            tableOutput("models.rf")
+                            tableOutput("models.rf"),
+                            
+                            #add label
+                            strong("Comparison Statistics on Test Data"),
+                            
+                            #create table output for test statistics
+                            verbatimTextOutput("rf.test"),
+                            
+                            #add titles
+                            strong("Plot of Variable Importance for Top 20 Variables"),
+                            
+                            #create plot for variable importance
+                            plotOutput("rf.imp"),
+                            
+                            #create conditional panel for text
+                            conditionalPanel(
+                              #add condition
+                              condition = "input.submit",
+                            
+                            p("The variables shown in this plot might seem a bit odd at first glance. This is beauce a large number of the predictor variables used are categorical in nature. In this case R has created a different variable for each level of the categorical variables.")
+                            ),
+                            
+                            
+                            
+                            #set column width
+                            width = 6
+                            )
+                          )
                           )
                         )
                         
