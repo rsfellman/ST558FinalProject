@@ -25,6 +25,8 @@ install.packages("tidyverse", "shiny", "maps", "DT", "rlang", "mathjaxr", "caret
 
 # Code to Run App
 
+The following code coppied into R should run the Shiny app.
+
 ``` r
 shiny::runGitHub("rsfellman/ST558FinalProject", "<rsfellman>", ref = "main", subdir = "FinalProjApp/")
 ```
