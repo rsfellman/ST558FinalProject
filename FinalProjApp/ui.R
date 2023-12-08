@@ -21,8 +21,18 @@ land.na <- landslide %>%
   select("landslide_category","landslide_trigger","landslide_size","landslide_setting","fatality_count","injury_count","country_name","admin_division_population","longitude", "latitude")
 
 
+#create and order factor for landslide size variable
+land.na$landslide_size <- as.factor(land.na$landslide_size)
+#reorder landslide size
+land.na$landslide_size <- factor(land.na$landslide_size, levels = c("catastrophic", "very_large", "large", "medium", "small", "unknown"))
 #make country name a factor
 land.na$country_name <- as.factor(land.na$country_name)
+#make landslide category a factor
+land.na$landslide_category <-as.factor(land.na$landslide_category)
+#make landslide trigger a factor
+land.na$landslide_trigger <-as.factor(land.na$landslide_trigger)
+#make landslide setting a factor
+land.na$landslide_setting <-as.factor(land.na$landslide_setting)
 
 #filter US data with filter function
 land.us<- land.na %>% 
@@ -319,7 +329,7 @@ fluidPage(
                           
                           #create main panel
                           mainPanel(
-                            p("To get results for your model, press the 'Fit Models' button."),
+                            p("To get results for your model, press the 'Fit Models' button. We are modeling the fatality count based on a variety of predictor variables seen on the sidebar."),
                             
                             #create column layout
                             fluidRow(
@@ -399,9 +409,152 @@ fluidPage(
                         ),
                
                #create subtab for prediction
-               tabPanel("Prediction"
+               tabPanel("Prediction",
                         
-                        #predict
+                        #create layout
+                        sidebarLayout(
+                          #create sidebar
+                          sidebarPanel(
+                            
+                            #add title
+                            h4("Select values of the predictor variables"),
+                            
+                            
+                            
+                            #use selectInput to allow user to chose value for landslide_category
+                            selectInput("category",
+                                        #add label
+                                        "landslide_category",
+                                        #add choices
+                                        choices = levels(land.nomiss$landslide_category),
+                                        #select initial value
+                                        selected = "landslide"),
+                            
+                            #use select input to allow user to chose value for landslide_trigger
+                            selectInput("trigger",
+                                        #add label
+                                        "landslide_trigger",
+                                        #add choices
+                                        choices = levels(land.nomiss$landslide_trigger),
+                                        #select initial value
+                                        selected = "downpour"),
+                            
+                            #use selectInput ot allow user to chose values for landslide_size
+                            selectInput("size",
+                                        #add label
+                                        "landslide_size",
+                                        #add choices
+                                        choices = levels(land.nomiss$landslide_size),
+                                        #select initial value
+                                        selected = "small"),
+                            
+                            #use selectInput to allow user to chose values for landlside_setting
+                            selectInput("setting",
+                                        #add label
+                                        "landslide_setting",
+                                        #add choices
+                                        choices = levels(land.nomiss$landslide_setting),
+                                        #select initial value
+                                        selected = "above_road"),
+                            
+                            #use numericInput to allow user to chose input for injury_count
+                            numericInput("injury",
+                                         #add label
+                                         "injury_count",
+                                         #add min
+                                         min = 0, 
+                                         #add max
+                                         max = max(land.nomiss$injury_count),
+                                         #set initial value
+                                         value = 10),
+                            
+                            
+                            
+                            #use selectInput to allow user to chose input for country_name
+                            selectInput("country",
+                                        #add label
+                                        "country_name",
+                                        #add choices
+                                        choices = levels(land.nomiss$country_name),
+                                        #select initial value
+                                        selected = "United States"),
+                            
+                            #use numericInput to allow user to select input for admin_division_population
+                            numericInput("pop",
+                                         #add label
+                                         "admin_division_population",
+                                         #add min
+                                         min = min(land.nomiss$admin_division_population),
+                                         #add max
+                                         max = max(land.nomiss$admin_division_population),
+                                         #set initial value
+                                         value = 2000),
+                            
+                            #use numericInput to allow user to select input for longitude
+                            numericInput("longitude",
+                                         #add label
+                                         "longitude",
+                                         #add min
+                                         min = -180,
+                                         #add max
+                                         max = 180,
+                                         #set initial value
+                                         value = 0),
+                            
+                            #use numericInput to allow user to select input for latitude
+                            numericInput("latitude",
+                                         #add label
+                                         "latitude",
+                                         #add min
+                                         min = -90,
+                                         #add max
+                                         max = 90,
+                                         #set initial value
+                                         value = 0),
+                            
+                            #add break
+                            br(),
+                            
+                            #use actionButton to create button for user to select to predict
+                            actionButton("predict",
+                                         #add label
+                                         "Predict"),
+                            
+                            
+                            
+                            ), 
+                            
+                          
+                          
+                          #create main panel
+                          mainPanel(
+                            
+                            h5("To predict the fatality count, select values of the predictor variables then click the predict button."),
+                            #add break
+                            br(),
+                            br(),
+                            
+                            #add text
+                            h4("Predicted fatality count using multiple linear regression model:"),
+                            
+                            #use verbatimTextOutput to create output for prediction using mlr model
+                            verbatimTextOutput("mlr.predict"),
+                            
+                            #add text
+                            h4("Predicted fatality count using random forest model:"),
+                            
+                            #use verbatimTextOutput to create output for prediction using random forest model
+                            verbatimTextOutput("rf.predict"),
+                            
+                            #add break
+                            br(),
+                            
+                            #add text
+                            h5("Note: These models are not the best at predicting fatality count and it is possible to get a negative prediction which makes no sense in this context. Also note that certain combinations of longitude/latitude and country name do not realistically exist.")
+                            
+                            
+                          )
+                        )
                         
                         )
                

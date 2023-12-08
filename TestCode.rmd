@@ -185,7 +185,7 @@ land.train.sub <- land.nomiss
     
 ```{r}
     #fit mlr model
-    fit.mlr <- train(fatality_count ~ , data = land.nomiss,
+    fit.mlr <- train(fatality_count ~ landslide_setting + country_name, data = land.nomiss,
                      #select method
                      method = "lm",
                      #preprocess data
@@ -217,6 +217,10 @@ plot(imp, top = 20)
     pred.mlr <- predict(fit.mlr, newdata = land.nomiss)
 h<-   postResample(pred.mlr, obs = land.nomiss$fatality_count)
 
+```
+
+```{r}
+predict(fit.mlr, newdata = data.frame(landslide_category = "landslide", landslide_trigger = "unknown", landslide_setting = "unknown", injury_count = 0, country_name = "United States", admin_division_population = 20000, longitude = -100, latitude = 45))
 ```
 
 

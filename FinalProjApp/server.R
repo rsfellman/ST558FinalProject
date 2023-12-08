@@ -315,6 +315,61 @@ function(input, output, session) {
   })
   
   
+  #for predict subpanel:
+  
+  #use eventReactive function to only reevaluate the code when the predict buttion is clicked.
+  predict.inputs <- eventReactive(input$predict,{
+    #put all of the inputs into a list
+    list(category = input$category, trigger = input$trigger, size = input$size, setting = input$setting, injury = input$injury, country = input$country, population = input$pop, longitude = input$longitude, latitude = input$latitude)
+  })
+  
+  #use renderPrint to get output for mlr prediction
+  output$mlr.predict<- renderPrint({
+    #call data from eventReactive function
+    variable <- predict.inputs()
+    #call data from reactive function where models were fitted
+    data <- fitted.models()
+    
+    #use predict function with user inputs to predict on mlr model
+    predict(
+      #specify model
+      data$fit.mlr, 
+      #specify new data in a dataframe
+      newdata = data.frame(landslide_category = variable$category, 
+                           landslide_trigger = variable$trigger,
+                           landslide_size = variable$size,
+                           landslide_setting = variable$setting, 
+                           injury_count = variable$injury, 
+                           country_name = variable$country, 
+                           admin_division_population = variable$population, 
+                           longitude = variable$longitude,
+                           latitude = variable$latitude))
+  })
+  
+  
+  #use renderPrint to get output for random forest prediction
+  output$rf.predict<- renderPrint({
+    #call data from eventReactive function
+    variable <- predict.inputs()
+    #call data from reactive function where models were fitted
+    data <- fitted.models()
+    
+    #use predict function with user inputs to predict on mlr model
+    predict(
+      #specify model
+      data$fit.rf, 
+      #specify new data in a dataframe
+      newdata = data.frame(landslide_category = variable$category, 
+                           landslide_trigger = variable$trigger,
+                           landslide_size = variable$size,
+                           landslide_setting = variable$setting, 
+                           injury_count = variable$injury, 
+                           country_name = variable$country, 
+                           admin_division_population = variable$population, 
+                           longitude = variable$longitude,
+                           latitude = variable$latitude))
+  })
+  
 }
 
 
