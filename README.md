@@ -7,8 +7,24 @@ Rachel Fellman
 # Required Packages
 
 The following is a list of required packages needed to run the app:  
-`tidyverse`
+`tidyverse`  
+`shiny`  
+`maps`  
+`DT`  
+`rlang`  
+`mathjaxr`  
+`caret`
 
 # Installing Packages
 
+The following is the code needed to install the necessary packages.
+
+``` r
+install.packages("tidyverse", "shiny", "maps", "DT", "rlang", "mathjaxr", "caret")
+```
+
 # Code to Run App
+
+``` r
+shiny::runGitHub("rsfellman/ST558FinalProject", "<rsfellman>", ref = "main", subdir = "FinalProjApp/")
+```

@@ -499,7 +499,7 @@ fluidPage(
                                          #add max
                                          max = 180,
                                          #set initial value
-                                         value = 0),
+                                         value = -81),
                             
                             #use numericInput to allow user to select input for latitude
                             numericInput("latitude",
@@ -510,7 +510,7 @@ fluidPage(
                                          #add max
                                          max = 90,
                                          #set initial value
-                                         value = 0),
+                                         value = 35),
                             
                             #add break
                             br(),

@@ -13,8 +13,23 @@ knitr::opts_chunk$set(echo = TRUE)
 # Required Packages
 The following is a list of required packages needed to run the app:  
 `tidyverse`  
+`shiny`  
+`maps`  
+`DT`  
+`rlang`  
+`mathjaxr`  
+`caret`  
 
 
 # Installing Packages
+The following is the code needed to install the necessary packages.
+```{r, eval = FALSE}
+install.packages("tidyverse", "shiny", "maps", "DT", "rlang", "mathjaxr", "caret")
+```
 
 # Code to Run App
+
+```{r, eval= FALSE}
+shiny::runGitHub("rsfellman/ST558FinalProject", "<rsfellman>", ref = "main", subdir = "FinalProjApp/")
+```
+
