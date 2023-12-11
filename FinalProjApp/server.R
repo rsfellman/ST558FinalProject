@@ -1,6 +1,6 @@
 # Shiny Server for Final Project
 # Rachel Fellman
-
+#12/11/23
 
 
 # load necessary packages
@@ -211,7 +211,7 @@ function(input, output, session) {
   })
   
 
-  #next i will filter the data to only include the user selected variables (and the response variable) so the models can then be trained on these smaller datasets that include only the user selected variables.
+  #next I will filter the data to only include the user selected variables (and the response variable) so the models can then be trained on these smaller datasets that include only the user selected variables.
   
   #reevaluate with inputs only when button is pressed using eventReactive
   model<- eventReactive(input$submit,{
@@ -257,9 +257,9 @@ function(input, output, session) {
     fit.rf <- train(fatality_count ~ . , data = mod$rfor,
                     #select method
                     method = "rf",
-                    #do cross validation
+                    #do cross validation with user input on number of folds
                     trControl = trainControl(method = "cv", number = mod$cv),
-                    #add tuning parameter
+                    #add tuning parameter with user input
                     tuneGrid = data.frame(mtry = 1:mod$mtry))
     
     #put models into a list to call in later functions
