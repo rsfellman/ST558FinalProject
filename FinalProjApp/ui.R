@@ -67,8 +67,8 @@ fluidPage(
                # describe data used in app and format text using html type functions
                h3("Data"),
                p("This app uses the Global Landslide Catalog from NASA's Open Data Portal. This calatog was created to help identify landslide events that were triggered by rainfall, and it contains 11033 obsesrvations with 31 variables. More information on the data used in this app's creation can be found at the following link:"),
-               #add link to data using a() function
-               a("https://data.nasa.gov/Earth-Science/Global-Landslide-Catalog-Export/dd9e-wu2v"),
+               #add link to data using tags$a() function
+               tags$a(href = "https://data.nasa.gov/Earth-Science/Global-Landslide-Catalog-Export/dd9e-wu2v", "Landslide Data"),
                
                # describe purpose of each tab and format text using html type fucntions
                h3("Tabs"),
