@@ -25,6 +25,7 @@ land.na <- landslide %>%
 land.na$landslide_size <- as.factor(land.na$landslide_size)
 #reorder landslide size
 land.na$landslide_size <- factor(land.na$landslide_size, levels = c("catastrophic", "very_large", "large", "medium", "small", "unknown"))
+
 #make country name a factor
 land.na$country_name <- as.factor(land.na$country_name)
 #make landslide category a factor
@@ -41,6 +42,7 @@ land.us<- land.na %>%
 #filter data set so there are no missing values
 land.nomiss<- land.na[complete.cases(land.na), ]
 
+
 # Define server logic 
 function(input, output, session) {
 
@@ -50,7 +52,10 @@ function(input, output, session) {
   }, deleteFile = FALSE
   )
   
-  #create data exploration plots using conditional logic that changes the plot if the user selects a different type of summary from the drop down menu
+  #create data exploration plots using conditional logic that changes the plot if the user selects a different type of summary from the drop down menu. 
+  #Note: I know this uses a ton of conditional statements. However, because of the nature of the plots I couldn't figure out a more efficient way to do it and technically this works even if it is a bit difficult to follow the code.
+  
+  #use renderPlot function to create plots
   output$sum.plot <- renderPlot({
     #create base plot
     g<- ggplot()
@@ -86,7 +91,7 @@ function(input, output, session) {
         labs(x = "Longitude", y = "Latitude", title = "World Map of Landslides")
       
       
-      #create graph with condition US map and fatalities.
+      #create graph with condition US map colored by fatalities.
     } else if (input$graphsum == 2 & input$color2 == 1) {
       #create world map plot
       g +  geom_polygon(data = states, aes(x=long, y= lat, group = group), color = "darkgrey", fill = "grey") +
@@ -94,13 +99,12 @@ function(input, output, session) {
         geom_point(data = land.us, aes(x = longitude, y = latitude, colour = fatality_count) ) +
         #add a color gradient for the fatalities
         scale_colour_gradient(low = "lightblue", high = "darkblue", name = "Fatalities")+
-        #add labels.
         #adjust the coordinates
         coord_cartesian(xlim = c(-127,-65), ylim = c(25,50)) +
         #add labels.
         labs(x = "Longitude", y = "Latitude", title = "United States Map of Landslides")
       
-      #create graph for conditions us map and population
+      #create graph for conditions us map colored by population
     } else if (input$graphsum ==2 & input$color2 ==2) {
       g +  geom_polygon(data = states, aes(x=long, y= lat, group = group), color = "darkgrey", fill = "grey") +
         #add the points of landslides
@@ -130,12 +134,14 @@ function(input, output, session) {
       
       #create graph for conditions scatterplot and outlier box checked
     } else if (input$graphsum == 4 & input$outlier == TRUE & input$color4 == FALSE) {
+      #create scatter plot
       g + geom_jitter(data = land.out, aes(y = fatality_count, x = admin_division_population)) +
         #add labels
         labs(title = "Scatter Plot of Landslide Fatality Count by Population", y = "Fatality Count", x = "Population" )
       
       #create graph for conditions scatter plot and outlier and size box checked
     } else if (input$graphsum == 4 & input$outlier == TRUE & input$color4 == TRUE) {
+      #create scatter plot
       g + geom_jitter(data = land.out, aes(y = fatality_count, x = admin_division_population, color = landslide_size)) +
         #add labels
         labs(title = "Scatter Plot of Landslide Fatality Count by Population", y = "Fatality Count", x = "Population" ) +
@@ -144,6 +150,7 @@ function(input, output, session) {
       
       #create graph for conditions scatter plot and size box checked
     } else if (input$graphsum == 4 & input$outlier == FALSE & input$color4 == TRUE) {
+      #create scatter plot
       g + geom_jitter(data = land.na, aes(y = fatality_count, x = admin_division_population, color = landslide_size)) +
         #add labels
         labs(title = "Scatter Plot of Landslide Fatality Count by Population", y = "Fatality Count", x = "Population" ) +
@@ -185,6 +192,7 @@ function(input, output, session) {
     withMathJax(
       #create equation for higher order terms
       helpText("Example of multiple linear regression with higher order terms: $$ Y_i = β_0 + β_1x_i + β_2x_i^2 + E_i $$"),
+      #create equation for interaction terms
       helpText("Example of multiple linear regression ith interaction terms: $$ Y_i = β_0 + β_1x_{1i} + β_2x_{2i} + β_3 x_{1i}x_{2i} + E_i $$")
     )
   })
@@ -198,34 +206,35 @@ function(input, output, session) {
     #create train and test sets
     landslide.train <- land.nomiss[train.index, ]
     landslide.test <- land.nomiss[-train.index, ]
-    #create list output
+    #create list to use in later functions
     list(land.train = landslide.train, land.test = landslide.test)
   })
   
 
+  #next i will filter the data to only include the user selected variables (and the response variable) so the models can then be trained on these smaller datasets that include only the user selected variables.
   
-  #reevaluate with inputs only when button is pressed using event reactive
+  #reevaluate with inputs only when button is pressed using eventReactive
   model<- eventReactive(input$submit,{
     #call training set from reactive function
     sets <- train.test()
     
-    #filter training set for mlr to include only selected variables
+    #filter training set for mlr to include only user selected variables
     land.mlrvar <- sets$land.train %>% 
       select("fatality_count",input$mlr.vars)
     
-    #filter test set for mlr to include only selected variables
+    #filter test set for mlr to include only user selected variables
     land.mlrvar.test <- sets$land.test %>% 
       select("fatality_count", input$mlr.vars)
     
-    #filter training set for random forest to include only selected variables
+    #filter training set for random forest to include only user selected variables
     land.rfvar<- sets$land.train %>% 
       select("fatality_count", input$rforest.vars)
     
-    #filter test set for random forest to include only selected variables.
+    #filter test set for random forest to include only user selected variables.
     land.rfvar.test <- sets$land.test %>% 
       select("fatality_count", input$rforest.vars)
     
-    #put all inputs into a list
+    #put all inputs into a list to use in later functions
     list(mlr = land.mlrvar, rfor = land.rfvar, mtry = input$mtry, cv = input$cv, mlr.test = land.mlrvar.test, rfor.test = land.rfvar.test)
     
   })
@@ -253,11 +262,13 @@ function(input, output, session) {
                     #add tuning parameter
                     tuneGrid = data.frame(mtry = 1:mod$mtry))
     
+    #put models into a list to call in later functions
     list(fit.mlr = fit.mlr, fit.rf = fit.rf)
   })
   
-  #print resutls
+  #print mlr resutls using renderTable
   output$models.mlr<-  renderTable({
+    #call data from fitted.models reactive function
     data <- fitted.models()
     #print results of mlr fit
     print(data$fit.mlr)
@@ -276,22 +287,26 @@ function(input, output, session) {
     postResample(pred.mlr, obs = mod$mlr.test$fatality_count)
   })
   
-  
+  #use render print to print summary of mlr model
   output$mlr.summary<- renderPrint({
+    #call data from fitted.models reactive function
     data<- fitted.models()
+    #use summary function on mlr fit
     summary(data$fit.mlr)
   })
   
 
   
   
-  #print results
+  #print results of random forest model using renderTable function
   output$models.rf <- renderTable({
+    #call data from fitted.models reactive function
     data<- fitted.models()
     #print results of random forest model
     print(data$fit.rf)
   })
   
+  #create output of test statistics using renderPrint function
   output$rf.test <- renderPrint({
     #call data from reactive function where test and training subsets were formed
     mod <- model()
@@ -334,7 +349,7 @@ function(input, output, session) {
     predict(
       #specify model
       data$fit.mlr, 
-      #specify new data in a dataframe
+      #specify new data in a dataframe with user inputs (the inputs are in the eventReactive function)
       newdata = data.frame(landslide_category = variable$category, 
                            landslide_trigger = variable$trigger,
                            landslide_size = variable$size,
@@ -358,7 +373,7 @@ function(input, output, session) {
     predict(
       #specify model
       data$fit.rf, 
-      #specify new data in a dataframe
+      #specify new data in a dataframe with user inputs (the inputs are in the eventReactive function)
       newdata = data.frame(landslide_category = variable$category, 
                            landslide_trigger = variable$trigger,
                            landslide_size = variable$size,

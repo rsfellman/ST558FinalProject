@@ -38,14 +38,14 @@ land.na$landslide_setting <-as.factor(land.na$landslide_setting)
 land.us<- land.na %>% 
   filter(country_name == "United States")
 
-#filter data set so there are no missing values
+#filter data set so there are no missing values to use for the models
 land.nomiss<- land.na[complete.cases(land.na), ]
 
 
 # Define UI for application 
 fluidPage(
 
-    # Application title
+    #Add Application title with titlePanel function
     titlePanel("Landslides"),
     
     #add panels with tabsetPanel function
@@ -59,32 +59,39 @@ fluidPage(
                  #create the main panel for all the text
                mainPanel(
                  
-               #describe purpose of app
+               #describe purpose of app and format text using html type function
                h3("Purpose"),
-               p("This shiny app is being created for the final project for ST 558. It will plot, model, and predict using a dataset of my chosing (I am going to examine landslide data). It is created using and R studio project connected to github and the Shiny package."),
+               p("This shiny app is being created for the final project for ST 558. It will plot, model, and predict using a dataset of my chosing (I am going to examine landslide data). It is created using an R studio project connected to github and the Shiny package."),
                
-               # describe data used in app
+               # describe data used in app and format text using html type functions
                h3("Data"),
                p("This app uses the Global Landslide Catalog from NASA's Open Data Portal. This calatog was created to help identify landslide events that were triggered by rainfall, and it contains 11033 obsesrvations with 31 variables. More information on the data used in this app's creation can be found at the following link:"),
+               #add link to data using a() function
                a("https://data.nasa.gov/Earth-Science/Global-Landslide-Catalog-Export/dd9e-wu2v"),
                
-               # describe purpose of each tab
+               # describe purpose of each tab and format text using html type fucntions
                h3("Tabs"),
-               p("The data exploration tab will allow the app's user to creat different kind of numerical and graphical summaries. The modeling tab will fit two types of supervised learning models and will have 3 subtabs as well. The first subtab, modeling info, will explain the two chosen models. The second subtab, model fitting, will be where the data is trained and tested on the model. The last subtab under the modeling tab will be the prediction tab. This will give the app user the ability to predict using the models included in the previous tab. The user will be able to select values for the predictors in this tab.")
+               #describe about tab
+               p("The about tab, where we are now, provides a brief overview for the app.")
+               #describe the data exploration tab
+               p("The data exploration tab will allow the app's user to creat different kind of numerical and graphical summaries. There are two subtabs under data exploration. One for graphical summaries where the user can select between 4 different graph types and one for numerical summaries where the user can fitler and group data to get differnt group means.")
+               #describe the modeling tab
+               p("The modeling tab will fit two types of supervised learning models and will have 3 subtabs as well. The first subtab, modeling info, will explain the two chosen models. The second subtab, model fitting, will be where the data is trained and tested on the model. The last subtab under the modeling tab will be the prediction tab. This will give the app user the ability to predict using the models included in the previous tab. The user will be able to select values for the predictors in this tab.")
                       ),
                
-               #create the side panel for the image
+               #create the side panel for the image using sidebarPanel function
                  sidebarPanel(
-               #include relevant photo for data. Since this data is about landslides I will include a cartoon image of a landslide.
+               #include relevant photo for data. Since this data is about landslides I will include a cartoon image of a landslide usinf the inageOutput function.
                  imageOutput("image", width = "100px", height = "100px")
                               )
                             )
             ),
     
-    #create Data Exploration Tab
+    #create Data Exploration Tab with tabPanel function
     tabPanel("Data Explotation",
-             #creat sub panels to separate graphs from numeric summaries
+             #create sub panels to separate graphs from numeric summaries
              tabsetPanel(
+               #create subtab for graphical summaries using tabPanel function
                tabPanel("Graphical Summaries",
              #create layout for data exploration tab
              sidebarLayout(
@@ -92,6 +99,7 @@ fluidPage(
                #create sidebar panel where user can change inputs
                sidebarPanel(
                  
+                 #create input dropdown using selectInput function
                  selectInput("graphsum",
                              #add label
                              "Graphical Summary Type", 
@@ -100,10 +108,11 @@ fluidPage(
                              #set initial value to world map
                              selected = "World Map"),
                  
-                 #add conditional so the user can change what is viewed in each graphical summary
+                 #add conditional so the user can change what is viewed in each graphical summary using conditionalPanel function
                  conditionalPanel(
                    #set condition
                    condition = "input.graphsum == 1",
+                   #add buttons to allow user to change what the points are colored by using the radioButtons function
                    radioButtons("color1",
                                  #add label
                                  "Color Points By:",
@@ -113,10 +122,11 @@ fluidPage(
                                selected = 1)
                  ),
                  
-                 #add conditional panel for when us map is selected
+                 #add conditional panel for when us map is selected 
                  conditionalPanel(
                    #set condition
                    condition = "input.graphsum == 2",
+                   #add buttons that allows the user to change what the points are colored by using the radioButtons function
                    radioButtons("color2",
                                 #add label
                                 "Color Points By:",
@@ -130,6 +140,7 @@ fluidPage(
                  conditionalPanel(
                    #set condition
                    condition = "input.graphsum == 3",
+                   #add buttons that allow user to select what the graph will be filled by using radioButtons function
                    radioButtons("color3",
                                 #add label
                                 "Fill Graph By:",
@@ -168,9 +179,9 @@ fluidPage(
                  
                )
              )
-             #close graphical summaries subtab subtab
+             #close graphical summaries subtab
                ),
-             #create subpanel for numeric summaries
+             #create subpanel for numeric summaries using tabPanel function
              tabPanel("Numeric Summaries",
                       #create layout for numeric summaries subtab
                       sidebarLayout(
@@ -193,6 +204,8 @@ fluidPage(
                                       choices = c("landslide_category", "landslide_trigger", "landslide_size", "landslide_setting"),
                                       #chose initial value
                                       selected = "landslide_category")
+                          
+                          #close sidebar panel
                         ),
                         
                         #create main panel
@@ -225,16 +238,19 @@ fluidPage(
                #create modeling info subtab
                tabPanel("Modeling Info",
                         
+                        #describe multiple linear regression and format text using html type functions
                         #header
                         h3("Multiple Linear Regression"),
+                        #text
                         p("I will start by modeling the fatality count with a multiple linear regression model. While simple linear regression models one response to one predictor, multiple linear regression takes that a step farther. In multiple linear regression we can include more than one predictor variable, higher order terms (like squared terms), interaction terms, or any combination of those."),
                         
                         #use uioutput to create output that will allow for creation of equations in server
                         uiOutput("mlr.math"),
                         
-                        #more about multiple linear regression
+                        #describe more about multiple linear regression
                         p("When we include more terms in our model it typically improves our prediction ability (to an extent). Multiple linear regression is one example of this. However, when too many terms are included, our models can become overfit to our data. This is one of the downsides of multiple linear regression. In order to prevent overfitting, a variable selection technique such as forward selection can be used. Another downside of multiple linear regression is its complexity. In comparison to simple linear regression, we lose some of the interpretability of the coeficients (β) especially for higher order and interaction terms."),
                         
+                        #describe random forest models and format data using html type functions
                         #header
                         h3("Random Forest Models"),
                         #explain random forest model
@@ -256,6 +272,7 @@ fluidPage(
                           #create sidebar panel
                           sidebarPanel(
                             
+                            #create slider input that allows user to select the percentage of data used for the training set
                             sliderInput("test",
                                         #add label
                                         "Choose the percentage of data to use for training the model",
@@ -273,7 +290,7 @@ fluidPage(
                             checkboxGroupInput("mlr.vars",
                                                #add label
                                                "Select the variables you would like to include in the multiple linear regression model",
-                                               #add choices
+                                               #add choices (all variables besides fatality_count which is our response)
                                                names(land.nomiss[,-5]),
                                                # have all variables selected to start
                                                selected = names(land.nomiss[,-5])),
@@ -285,13 +302,12 @@ fluidPage(
                             checkboxGroupInput("rforest.vars",
                                                #add label
                                                "Select the variables you would like to include in the random forest model",
-                                               #add choices
+                                               #add choices (all variable besides fatality_count which is our response)
                                                names(land.nomiss[,-5]),
-                                               # have all variables selected to start
+                                               # have two variables selected to start
                                                selected = c("landslide_category", "landslide_trigger")
                                                ),
                             
-                            # h5("Set the tuning parameter for the random forest model. This parameter mtry gives us the number of randomly selected predictors we will use.")
                             
                             #create slider input that allows the user to set the tuning parameter
                             sliderInput("mtry",
@@ -329,6 +345,7 @@ fluidPage(
                           
                           #create main panel
                           mainPanel(
+                            #add paragraph style text instructions for user
                             p("To get results for your model, press the 'Fit Models' button. We are modeling the fatality count based on a variety of predictor variables seen on the sidebar."),
                             
                             #create column layout
@@ -337,22 +354,22 @@ fluidPage(
                                 
                                 #add bigger title
                                 h3("Multiple Linear Regression"),
-                            #add titles
+                            #add bold title
                             strong("Fit Statistics"),
                             
                             #add break
                             br(),
                             
-                            #print results of mlr training 
+                            #create output for results of mlr training 
                             tableOutput ("models.mlr"),
                             
-                            #add label
+                            #add bold title
                             strong("Comparison Statistics on Test Data"),
                             
                             #create table output for test statistics
                             verbatimTextOutput("mlr.test"),
                             
-                            #add title
+                            #add bold title
                             strong("MLR Summary"),
                             
                             #table output for mlr summary
@@ -368,22 +385,22 @@ fluidPage(
                               
                               #add bigger title
                               h3("Random Forest"),
-                            #add titles
+                            #add bold titles
                             strong("Fit Statistics"),
                             
                             #add break
                             br(),
                             
-                            #print results of random forest training
+                            #create output for results of random forest training
                             tableOutput("models.rf"),
                             
-                            #add label
+                            #add bold title
                             strong("Comparison Statistics on Test Data"),
                             
                             #create table output for test statistics
                             verbatimTextOutput("rf.test"),
                             
-                            #add titles
+                            #add bold titles
                             strong("Plot of Variable Importance for Top 20 Variables"),
                             
                             #create plot for variable importance
@@ -394,6 +411,7 @@ fluidPage(
                               #add condition
                               condition = "input.submit",
                             
+                              #add paragraph style text to explain some oddities of the variable importance plot
                             p("The variables shown in this plot might seem a bit odd at first glance. This is beauce a large number of the predictor variables used are categorical in nature. In this case R has created a different variable for each level of the categorical variables.")
                             ),
                             
@@ -425,7 +443,7 @@ fluidPage(
                             selectInput("category",
                                         #add label
                                         "landslide_category",
-                                        #add choices
+                                        #add choices (all levels of the landslide_category factor variable)
                                         choices = levels(land.nomiss$landslide_category),
                                         #select initial value
                                         selected = "landslide"),
@@ -434,25 +452,25 @@ fluidPage(
                             selectInput("trigger",
                                         #add label
                                         "landslide_trigger",
-                                        #add choices
+                                        #add choices (all levels of the landslide_trigger factor variable)
                                         choices = levels(land.nomiss$landslide_trigger),
                                         #select initial value
                                         selected = "downpour"),
                             
-                            #use selectInput ot allow user to chose values for landslide_size
+                            #use selectInput to allow user to chose values for landslide_size
                             selectInput("size",
                                         #add label
                                         "landslide_size",
-                                        #add choices
+                                        #add choices (all levels of the landslide_size factor variable)
                                         choices = levels(land.nomiss$landslide_size),
                                         #select initial value
                                         selected = "small"),
                             
-                            #use selectInput to allow user to chose values for landlside_setting
+                            #use selectInput to allow user to chose values for landslide_setting
                             selectInput("setting",
                                         #add label
                                         "landslide_setting",
-                                        #add choices
+                                        #add choices (all levels of the landslide_setting factor variable)
                                         choices = levels(land.nomiss$landslide_setting),
                                         #select initial value
                                         selected = "above_road"),
@@ -463,7 +481,7 @@ fluidPage(
                                          "injury_count",
                                          #add min
                                          min = 0, 
-                                         #add max
+                                         #add max (set max equal to the maximum injury_count in our data set to prevent user from extrapolating)
                                          max = max(land.nomiss$injury_count),
                                          #set initial value
                                          value = 10),
@@ -474,7 +492,7 @@ fluidPage(
                             selectInput("country",
                                         #add label
                                         "country_name",
-                                        #add choices
+                                        #add choices (all levels of the country_name factor variable)
                                         choices = levels(land.nomiss$country_name),
                                         #select initial value
                                         selected = "United States"),
@@ -483,9 +501,9 @@ fluidPage(
                             numericInput("pop",
                                          #add label
                                          "admin_division_population",
-                                         #add min
+                                         #add min (set min equal to the minimum admin_division_population to prevent user from extrapolating)
                                          min = min(land.nomiss$admin_division_population),
-                                         #add max
+                                         #add max (set max equal to the maximum admin_division_population to prevent user from extrapolating)
                                          max = max(land.nomiss$admin_division_population),
                                          #set initial value
                                          value = 2000),
@@ -498,7 +516,7 @@ fluidPage(
                                          min = -180,
                                          #add max
                                          max = 180,
-                                         #set initial value
+                                         #set initial value to my home city (Charlotte)
                                          value = -81),
                             
                             #use numericInput to allow user to select input for latitude
@@ -509,7 +527,7 @@ fluidPage(
                                          min = -90,
                                          #add max
                                          max = 90,
-                                         #set initial value
+                                         #set initial value to my home city (Charlotte)
                                          value = 35),
                             
                             #add break
@@ -529,18 +547,19 @@ fluidPage(
                           #create main panel
                           mainPanel(
                             
+                            #add text instructions formated using html type functions
                             h5("To predict the fatality count, select values of the predictor variables then click the predict button."),
                             #add break
                             br(),
                             br(),
                             
-                            #add text
+                            #add text title
                             h4("Predicted fatality count using multiple linear regression model:"),
                             
                             #use verbatimTextOutput to create output for prediction using mlr model
                             verbatimTextOutput("mlr.predict"),
                             
-                            #add text
+                            #add text title
                             h4("Predicted fatality count using random forest model:"),
                             
                             #use verbatimTextOutput to create output for prediction using random forest model
@@ -549,7 +568,7 @@ fluidPage(
                             #add break
                             br(),
                             
-                            #add text
+                            #add text to explain models
                             h5("Note: These models are not the best at predicting fatality count and it is possible to get a negative prediction which makes no sense in this context. Also note that certain combinations of longitude/latitude and country name do not realistically exist.")
                             
                             
