@@ -249,10 +249,10 @@ fluidPage(
                         uiOutput("mlr.math"),
                         
                         #describe more about multiple linear regression
-                        p("When we include more terms in our model it typically improves our prediction ability (to an extent). Multiple linear regression is one example of this. However, when too many terms are included, our models can become overfit to our data. This is one of the downsides of multiple linear regression. In order to prevent overfitting, a variable selection technique such as forward selection can be used. Another downside of multiple linear regression is its complexity. In comparison to simple linear regression, we lose some of the interpretability of the coeficients (β) especially for higher order and interaction terms."),
+                        p(" There are a few assumptions we make when fitting a multiple linear regression model: there is a linear relationship between response and predictor variables, the predictors are not highly correlated, and the residuals are normally distributed. When we include more terms in our model, it introduces the possibility for correlation between the predictors. However, more varibles also typically improves our prediction ability. Multiple linear regression is one example of this. On the other hand, when too many terms are included, our models can become overfit to our data. This is one of the downsides of multiple linear regression. In order to prevent overfitting, a variable selection technique such as forward selection can be used. Another downside of multiple linear regression is its complexity. In comparison to simple linear regression, we lose some of the interpretability of the coeficients (β) especially for higher order and interaction terms."),
                         
                         #describe random forest models and format data using html type functions
-                        #header
+                        #headerpredictors
                         h3("Random Forest Models"),
                         #explain random forest model
                         p("I will also model the fatality rate using a random forest model. A random forest model is an extension of the bagged tree classification model. In a simple classification model tree, binary decisions are mapped. Each branch of the tree is called a node and our final classifications can be seen on the leaves. At each node we see a variable split into 2 directions. These splits continue until we get to the leaves.  In a bagged tree model, the bootstrapping method is used and the data is resampled multiple times to create different test sets and then each test set is trained on the models separately. Then our final prediction is the average of the individual model's predictions. The Random Forest model uses the same bagging method and creates multiple trees from the bootstrap samples and averages the results. The difference is that the random forest method does not use all of the predictors, instead it uses a random subset of predictors for each sample and tree fit. More specifically, in a random forest model, each time there is a split, the predictor to split on is chosen from a random sample of m predictors from the full set of p predictors. At each node, a new sample of m predictors is taken."), 
@@ -313,7 +313,7 @@ fluidPage(
                             #create slider input that allows the user to set the tuning parameter
                             sliderInput("mtry",
                                         #add label
-                                        "Set tuning parameter mtry for random forest model",
+                                        "Set tuning parameter, mtry, for the random forest model",
                                         #set minimum
                                         min = 1,
                                         #set maximum
