@@ -70,12 +70,12 @@ fluidPage(
                #add link to data using tags$a() function
                tags$a(href = "https://data.nasa.gov/Earth-Science/Global-Landslide-Catalog-Export/dd9e-wu2v", "Landslide Data"),
                
-               # describe purpose of each tab and format text using html type fucntions
+               # describe purpose of each tab and format text using html type functions
                h3("Tabs"),
                #describe about tab
                p("The about tab, where we are now, provides a brief overview for the app."),
                #describe the data exploration tab
-               p("The data exploration tab will allow the app's user to creat different kind of numerical and graphical summaries. There are two subtabs under data exploration. One for graphical summaries where the user can select between 4 different graph types and one for numerical summaries where the user can fitler and group data to get differnt group means."),
+               p("The data exploration tab will allow the app's user to create different kind of numerical and graphical summaries. There are two subtabs under data exploration. One for graphical summaries where the user can select between 4 different graph types and one for numerical summaries where the user can filter and group data to get different group means."),
                #describe the modeling tab
                p("The modeling tab will fit two types of supervised learning models and will have 3 subtabs as well. The first subtab, modeling info, will explain the two chosen models. The second subtab, model fitting, will be where the data is trained and tested on the model. The last subtab under the modeling tab will be the prediction tab. This will give the app user the ability to predict using the models included in the previous tab. The user will be able to select values for the predictors in this tab.")
                       ),
@@ -413,7 +413,7 @@ fluidPage(
                               condition = "input.submit",
                             
                               #add paragraph style text to explain some oddities of the variable importance plot
-                            p("The variables shown in this plot might seem a bit odd at first glance. This is beauce a large number of the predictor variables used are categorical in nature. In this case R has created a different variable for each level of the categorical variables.")
+                            p("The variables shown in this plot might seem a bit odd at first glance. This is because a large number of the predictor variables used are categorical in nature. In this case R has created a different variable for each level of the categorical variables.")
                             ),
                             
                             
@@ -549,7 +549,7 @@ fluidPage(
                           mainPanel(
                             
                             #add text instructions formated using html type functions
-                            h5("To predict the fatality count, select values of the predictor variables then click the predict button."),
+                            h5("To predict the fatality count, select values of the predictor variables then click the 'Predict' button."),
                             #add break
                             br(),
                             br(),
