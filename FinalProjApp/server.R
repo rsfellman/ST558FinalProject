@@ -193,7 +193,7 @@ function(input, output, session) {
       #create equation for higher order terms
       helpText("Example of multiple linear regression with higher order terms: $$ Y_i = β_0 + β_1x_i + β_2x_i^2 + E_i $$"),
       #create equation for interaction terms
-      helpText("Example of multiple linear regression ith interaction terms: $$ Y_i = β_0 + β_1x_{1i} + β_2x_{2i} + β_3 x_{1i}x_{2i} + E_i $$")
+      helpText("Example of multiple linear regression with interaction terms: $$ Y_i = β_0 + β_1x_{1i} + β_2x_{2i} + β_3 x_{1i}x_{2i} + E_i $$")
     )
   })
   
