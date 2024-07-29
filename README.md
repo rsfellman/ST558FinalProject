@@ -13,7 +13,7 @@ The following is a list of required packages needed to run the app:
 `DT`  
 `rlang`  
 `mathjaxr`  
-`caret`
+`caret`  
 `randomForest`
 
 # Installing Packages
