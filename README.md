@@ -14,6 +14,7 @@ The following is a list of required packages needed to run the app:
 `rlang`  
 `mathjaxr`  
 `caret`
+`randomForest`
 
 # Installing Packages
 
@@ -27,6 +28,7 @@ install.packages("DT")
 install.packages("rlang")
 install.packages("mathjaxr")
 install.packages("caret")
+install.packages("randomForest")
 ```
 
 # Code to Run App
