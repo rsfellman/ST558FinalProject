@@ -1,4 +1,4 @@
-ReadMe
+Landslide App
 ================
 Rachel Fellman
 
