@@ -1,6 +1,6 @@
 Landslide App
 ================
-Rachel Fellman
+Author: Rachel Fellman
 
 # Description
 This repository holds a shiny app created in R. The app allows the user to plot, model, and predict data from the Global Landslide Catalog from NASA's Open Data Portal.
