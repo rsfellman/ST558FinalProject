@@ -1,0 +1,186 @@
+---
+title: "Modeling"
+author: "Rachel Fellman"
+date: "2024-12-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(ranger)
+library(fastDummies)
+library(xgboost)
+```
+
+
+```{r}
+landslides <- read_csv('landslides_clean_full.csv')
+```
+
+```{r}
+#drop nas
+landslides_train <- landslides %>% 
+  drop_na(fatality_count)
+```
+
+```{r}
+#get testing data as rows with na in fatality count
+landslides_test <- landslides[is.na(landslides$fatality_count),]
+```
+
+
+```{r}
+#remove columns
+landslide_deaths <- landslides_train %>% 
+  mutate(deaths = ifelse(fatality_count == 0, 0, 1)) %>% 
+  select(-fatality_count, -...1, - event_date, - source_name, -event_title, - event_description, -location_description, -country_name, -injury_count, - gazeteer_closest_point)
+```
+
+```{r}
+#remove columns
+landslide_death_test<- landslides_test %>% 
+    select(-fatality_count, -...1, - event_date, - source_name, -event_title, - event_description, -location_description, -country_name, -injury_count, - gazeteer_closest_point, -fatality_count)
+```
+
+
+
+
+
+
+
+```{r}
+#preprocessing using the recipie function
+rec <- recipe(deaths~., data = landslide_deaths) %>% 
+  #deal with date columns
+  #step_date(event_date, features = c("year", "month", "dow")) %>%
+  #remove original OFFER_DATE column
+  #step_rm(event_date, source_name, event_title, event_description, location_description, country_code) %>% 
+  #impute mean for the missing numeric data
+  #Assign placeholder labels for unseen levels
+  step_novel(all_nominal_predictors()) %>% 
+  step_impute_median(all_numeric_predictors()) %>% 
+  #make dummy variables for categorical variables
+  step_dummy(all_nominal_predictors()) %>% 
+  #Remove zero-variance predictors
+  step_zv(all_predictors()) %>%
+  #deal with highly correlated predictors
+  step_corr(all_numeric_predictors()) %>%
+  #prep
+  prep()
+```
+
+
+
+
+```{r}
+rec_prep <- prep(rec)
+
+# juice
+train_processed <- juice(rec_prep)
+
+# bake
+test_processed <- bake(rec_prep, new_data = landslide_death_test)
+
+# fit classification model
+model <- ranger(
+  deaths ~ ., 
+  data = train_processed,
+  probability = T)
+
+#predict
+predictions <- predict(model, data = train_processed)
+x<- predictions$predictions[,1]
+
+death <- ifelse(x > .5, 1,0)
+
+
+#log loss
+ll <- -mean(landslide_deaths$deaths * log(x) +(1-landslide_deaths$deaths)* log(1-x)) 
+ll
+```
+pretty good log loss for predicting existance of fatalities
+
+
+```{r}
+#predict for the unknown fatalities
+predictions_unknown <- predict(model, data = test_processed)
+```
+
+```{r}
+#add preds to big data frame to get the observations with deaths
+death_preds <- landslide_death_test
+death_preds$prediction <- predictions_unknown$predictions[,1]
+
+fatality_test <- death_preds %>% 
+  filter(prediction >= .5)
+```
+
+
+```{r}
+#remove columns
+landslides_train_fatality <- landslides_train %>% 
+  select( -...1, - event_date, - source_name, -event_title, - event_description, -location_description, -country_name, -injury_count, - gazeteer_closest_point) 
+```
+
+```{r}
+#select obs with more than 0 fatalities
+landslides_train_fatality <- landslides_train_fatality[landslides_train_fatality$fatality_count != 0,]
+```
+
+
+```{r}
+
+#preprocessing using the recipe function
+rec <- recipe(fatality_count~., data = landslides_train_fatality) %>% 
+  #deal with date columns
+  #step_date(event_date, features = c("year", "month", "dow")) %>%
+  #remove original OFFER_DATE column
+  #step_rm(event_date, source_name, event_title, event_description, location_description, country_code) %>% 
+  #impute mean for the missing numeric data
+  #Assign placeholder labels for unseen levels
+  step_novel(all_nominal_predictors()) %>% 
+  step_impute_median(all_numeric_predictors()) %>% 
+  #make dummy variables for categorical variables
+  step_dummy(all_nominal_predictors()) %>% 
+  #Remove zero-variance predictors
+  step_zv(all_predictors()) %>%
+  #deal with highly correlated predictors
+  step_corr(all_numeric_predictors()) %>%
+  #prep
+  prep()
+
+
+
+rec_prep <- prep(rec)
+
+#juice
+train_processed <- juice(rec_prep)
+
+#bake
+test_processed <- bake(rec_prep, new_data = fatality_test)
+
+# fit model
+model <- ranger(
+  fatality_count ~ ., 
+  data = train_processed)
+#predict
+predictions <- predict(model, data = train_processed)
+
+```
+
+
+```{r}
+#get root mean squared error
+rmse <- sqrt(mean((predictions$predictions-landslides_train_fatality$fatality_count)^2))
+rmse
+```
+
+
+
+
+
