@@ -15,6 +15,7 @@ library(tidymodels)
 library(ranger)
 library(fastDummies)
 library(xgboost)
+library(rsample)
 ```
 
 
@@ -178,6 +179,42 @@ predictions <- predict(model, data = train_processed)
 #get root mean squared error
 rmse <- sqrt(mean((predictions$predictions-landslides_train_fatality$fatality_count)^2))
 rmse
+```
+
+```{r}
+#cross validation
+
+# set seed
+set.seed(123) 
+# create folds
+folds <- sample(rep(1:10, lengtth.out= length(train_processed)))
+
+# list to store results
+cv_results <- list()
+
+# k-fold cv
+for (i in seq_along(folds)) {
+  # split folds
+  validation_indices <- folds[[i]]
+  train_fold <- train_processed[-validation_indices, ]
+  validation_fold <- train_processed[validation_indices, ]
+  
+  # train on folds
+  model <- ranger(fatality_count ~ ., data = train_fold)
+  
+  #predict on folds
+  predictions <- predict(model, data = validation_fold)$predictions
+  
+  # get results
+  actual <- validation_fold$fatality_count
+  rmse <- sqrt(mean((predictions - actual)^2))
+  cv_results[[i]] <- list(predictions = predictions, actual = actual, rmse = rmse)
+}
+
+# RMSE 
+average_rmse <- mean(sapply(cv_results, function(x) x$rmse))
+print(paste("Average RMSE:", average_rmse))
+
 ```
 
 
