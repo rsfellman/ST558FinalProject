@@ -195,9 +195,9 @@ cv_results <- list()
 # k-fold cv
 for (i in seq_along(folds)) {
   # split folds
-  validation_indices <- folds[[i]]
-  train_fold <- train_processed[-validation_indices, ]
-  validation_fold <- train_processed[validation_indices, ]
+  validation_i <- folds[[i]]
+  train_fold <- train_processed[-validation_i, ]
+  validation_fold <- train_processed[validation_i, ]
   
   # train on folds
   model <- ranger(fatality_count ~ ., data = train_fold)
@@ -213,7 +213,7 @@ for (i in seq_along(folds)) {
 
 # RMSE 
 average_rmse <- mean(sapply(cv_results, function(x) x$rmse))
-print(paste("Average RMSE:", average_rmse))
+print(paste("Average RMSE:", average_rmse)) 
 
 ```
 
